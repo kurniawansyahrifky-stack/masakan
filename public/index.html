@@ -1,0 +1,992 @@
+<!DOCTYPE html>
+<html lang="id" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sabaku Kitchen: Atik Mahalla — Ketulusan Hati di Setiap Rasa</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Shippori+Mincho:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    body { background-color: #08080A; color: #EDE8DF; font-family: 'Plus Jakarta Sans', sans-serif; overflow-x: hidden; position: relative; }
+    .font-serif { font-family: 'Cormorant Garamond', Georgia, serif; }
+    .font-kanji { font-family: 'Shippori Mincho', serif; }
+    
+    .gold-gradient-text {
+      background: linear-gradient(135deg, #F5DEB3 0%, #C5A059 50%, #8E6F2F 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    #goldDustCanvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 35;
+    }
+
+    .slide-item { transition: opacity 1.3s cubic-bezier(0.4, 0, 0.2, 1), transform 1.3s cubic-bezier(0.4, 0, 0.2, 1); }
+    .slide-active { opacity: 1 !important; transform: scale(1) !important; pointer-events: auto; }
+    .slide-hidden { opacity: 0 !important; transform: scale(1.06) !important; pointer-events: none; }
+    
+    .custom-scroll::-webkit-scrollbar { width: 4px; }
+    .custom-scroll::-webkit-scrollbar-thumb { background: #C5A059; border-radius: 4px; }
+    .spin-slow { animation: spin 8s linear infinite; }
+    @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body class="selection:bg-[#C5A059] selection:text-[#08080A] bg-[#08080A]">
+
+  <canvas id="goldDustCanvas"></canvas>
+
+  <!-- POP-UP SAMBUTAN MASUK (AUDIO AUTOPLAY) -->
+  <div id="welcomeGate" class="fixed inset-0 z-50 bg-black/90 backdrop-blur-md flex items-center justify-center p-4">
+    <div class="bg-[#121216] border border-[#C5A059]/40 p-8 max-w-md w-full text-center space-y-6 shadow-2xl rounded-sm">
+      <div class="w-12 h-12 rounded-full border border-[#C5A059] flex items-center justify-center text-[#C5A059] mx-auto text-xl font-serif">
+        和
+      </div>
+      <div class="space-y-2">
+        <span class="text-[10px] uppercase tracking-[0.3em] text-[#C5A059] font-medium">Selamat Datang di</span>
+        <h2 class="font-serif text-3xl text-[#EDE8DF]">Sabaku Kitchen: Atik Mahalla</h2>
+        <p class="text-xs text-[#A5A5AC] font-light leading-relaxed pt-1">
+          Kelezatan masakan Nusantara dalam balutan ketenangan dan estetika Zen Negeri Sakura.
+        </p>
+      </div>
+
+      <div class="pt-2 space-y-3">
+        <button onclick="enterWithAudio()" class="w-full py-3.5 bg-[#C5A059] hover:bg-[#F3D99A] text-[#08080A] font-bold text-xs uppercase tracking-[0.2em] transition flex items-center justify-center gap-2 shadow-lg shadow-[#C5A059]/10">
+          <i class="fa-solid fa-volume-high"></i> Masuk Bersama Alunan Musik
+        </button>
+        <button onclick="enterMuted()" class="text-[11px] text-[#8E8E93] hover:text-white uppercase tracking-wider block mx-auto">
+          Masuk Tanpa Suara
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- FLOATING MUSIC PLAYER -->
+  <div class="fixed bottom-6 left-6 z-40 flex items-center gap-3 bg-[#101014]/90 border border-[#C5A059]/40 backdrop-blur-md px-3.5 py-2 rounded-full shadow-2xl">
+    <button onclick="toggleAudio()" class="w-8 h-8 rounded-full border border-[#C5A059] flex items-center justify-center text-[#C5A059] hover:scale-105 transition" title="Nyalakan/Matikan Musik">
+      <i id="musicIcon" class="fa-solid fa-volume-high text-xs spin-slow"></i>
+    </button>
+    <div class="hidden sm:block text-left pr-2">
+      <span class="text-[10px] text-[#EDE8DF] block font-serif tracking-wider">Zen Melodies</span>
+      <span id="musicStatus" class="text-[9px] text-[#C5A059] uppercase tracking-widest block">Sedang Memutar</span>
+    </div>
+  </div>
+
+  <audio id="bgMusic" loop preload="auto">
+    <source src="/zen.mp3" type="audio/mpeg">
+    <source src="https://files.catbox.moe/o3r3k2.mp3" type="audio/mpeg">
+  </audio>
+
+  <!-- NAVBAR -->
+  <nav class="fixed top-0 w-full z-40 bg-[#08080A]/90 backdrop-blur-md border-b border-white/5 py-4 px-6 md:px-14 flex justify-between items-center transition-all duration-300">
+    <div class="flex items-center space-x-3.5">
+      <div class="w-9 h-9 rounded-full border border-[#C5A059] flex items-center justify-center text-[#C5A059] font-kanji text-sm shadow-lg shadow-[#C5A059]/10">
+        心
+      </div>
+      <div>
+        <h1 class="font-serif tracking-[0.2em] text-lg md:text-xl font-bold uppercase gold-gradient-text">Sabaku Kitchen</h1>
+        <p class="text-[9px] tracking-[0.35em] text-[#A0A0A5] uppercase -mt-0.5">Atik Mahalla • アティックマハラ</p>
+      </div>
+    </div>
+
+    <div class="hidden md:flex items-center space-x-9 text-xs tracking-[0.25em] uppercase text-[#EDE8DF]/75 font-medium">
+      <a id="navPromoLink" href="#promoSection" class="hover:text-[#C5A059] transition text-[#F3D99A] hidden">Promo Khusus</a>
+      <a href="#menu" class="hover:text-[#C5A059] transition">Daftar Menu</a>
+      <a href="#jiwa" class="hover:text-[#C5A059] transition">Filosofi</a>
+      <a id="navLokasiLink" href="#lokasi" class="hover:text-[#C5A059] transition hidden">Lokasi</a>
+    </div>
+
+    <button onclick="toggleCart()" class="relative px-4 py-2 border border-[#C5A059]/40 bg-[#121216] hover:border-[#C5A059] text-xs transition flex items-center gap-2.5 shadow-md">
+      <i class="fa-solid fa-basket-shopping text-[#C5A059]"></i>
+      <span class="tracking-wider uppercase text-[10px] hidden sm:inline text-[#EDE8DF]/80">Pesanan</span>
+      <span id="cartCount" class="bg-[#C5A059] text-[#08080A] text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center">0</span>
+    </button>
+  </nav>
+
+  <!-- HERO SLIDER -->
+  <header class="relative h-[92vh] w-full overflow-hidden flex items-center justify-center">
+    <div id="sliderWrapper" class="absolute inset-0 w-full h-full -z-10">
+      <div class="slide-item slide-active absolute inset-0 w-full h-full">
+        <img src="https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?q=80&w=1920&auto=format&fit=crop" class="w-full h-full object-cover brightness-[0.34] contrast-110" alt="Kyoto House" />
+        <div class="absolute inset-0 bg-gradient-to-t from-[#08080A] via-[#08080A]/40 to-transparent"></div>
+      </div>
+      <div class="slide-item slide-hidden absolute inset-0 w-full h-full">
+        <img src="https://images.unsplash.com/photo-1503899036084-c55cdd92da26?q=80&w=1920&auto=format&fit=crop" class="w-full h-full object-cover brightness-[0.32] contrast-115" alt="Pavilion" />
+        <div class="absolute inset-0 bg-gradient-to-t from-[#08080A] via-[#08080A]/40 to-transparent"></div>
+      </div>
+      <div class="slide-item slide-hidden absolute inset-0 w-full h-full">
+        <img src="https://images.unsplash.com/photo-1528164344705-475426879c0d?q=80&w=1920&auto=format&fit=crop" class="w-full h-full object-cover brightness-[0.34] contrast-110" alt="Lentera" />
+        <div class="absolute inset-0 bg-gradient-to-t from-[#08080A] via-[#08080A]/40 to-transparent"></div>
+      </div>
+    </div>
+
+    <div class="relative z-10 max-w-4xl mx-auto px-6 text-center space-y-6">
+      <div class="inline-flex items-center gap-2 border border-[#C5A059]/40 bg-[#08080A]/80 backdrop-blur-md px-4 py-1.5 rounded-full">
+        <span class="font-kanji text-[#C5A059] text-xs">真心</span>
+        <span class="w-1 h-1 rounded-full bg-[#C5A059]"></span>
+        <span class="text-[11px] tracking-[0.25em] text-[#EDE8DF] uppercase font-medium">Magokoro • Dibuat Dari Ketulusan Hati</span>
+      </div>
+
+      <h2 id="heroTitle" class="font-serif text-5xl md:text-7xl lg:text-8xl font-normal leading-[1.08] tracking-tight">
+        Rasa Bukan Sekadar Bumbu, <br>
+        <span class="italic font-normal gold-gradient-text">Tetapi Ketulusan Jiwa</span>
+      </h2>
+
+      <p id="heroSubtitle" class="text-[#A5A5AC] text-sm md:text-base font-light max-w-2xl mx-auto leading-relaxed">
+        Memasak adalah tentang bagaimana sepiring hidangan disiapkan dengan niat baik, kesabaran yang hening, dan ketulusan hati yang sampai kepada penikmatnya.
+      </p>
+
+      <div class="pt-6 flex flex-wrap justify-center items-center gap-4">
+        <a href="#menu" class="px-8 py-3.5 bg-[#C5A059] text-[#08080A] text-xs uppercase tracking-[0.2em] font-bold hover:bg-[#F3D99A] transition duration-300 shadow-xl shadow-[#C5A059]/10">
+          Pilih Menu Hari Ini
+        </a>
+      </div>
+
+      <div class="pt-8 flex justify-center gap-2">
+        <button onclick="setSlide(0)" class="slide-dot w-8 h-[2px] bg-[#C5A059] transition-all"></button>
+        <button onclick="setSlide(1)" class="slide-dot w-4 h-[2px] bg-white/20 transition-all"></button>
+        <button onclick="setSlide(2)" class="slide-dot w-4 h-[2px] bg-white/20 transition-all"></button>
+      </div>
+    </div>
+  </header>
+
+  <!-- BANNER PROMO DENGAN TIMER COUNTDOWN -->
+  <section id="promoSection" class="hidden py-12 px-6 md:px-16 max-w-6xl mx-auto">
+    <div class="relative overflow-hidden border border-[#C5A059]/40 bg-[#121216] shadow-2xl rounded-sm">
+      <div class="grid grid-cols-1 md:grid-cols-2">
+        <div class="relative h-64 md:h-auto overflow-hidden">
+          <img id="promoImg" src="" alt="Promo Banner" class="w-full h-full object-cover">
+          <div class="absolute inset-0 bg-gradient-to-t md:bg-gradient-to-r from-black/80 md:from-transparent to-black/20"></div>
+          <span class="absolute top-4 left-4 bg-gradient-to-r from-amber-600 to-yellow-500 text-black text-[10px] font-black uppercase tracking-widest px-3 py-1 shadow">
+            PENAWARAN KHUSUS
+          </span>
+        </div>
+
+        <div class="p-8 md:p-10 flex flex-col justify-between space-y-6">
+          <div class="space-y-3">
+            <span class="text-[10px] text-[#C5A059] uppercase tracking-[0.3em] font-semibold">Sabaku Kitchen: Atik Mahalla</span>
+            <h3 id="promoTitle" class="font-serif text-3xl md:text-4xl font-bold text-[#EDE8DF] leading-tight"></h3>
+            <p id="promoCaption" class="text-xs md:text-sm text-[#A5A5AC] font-light leading-relaxed"></p>
+          </div>
+
+          <div class="space-y-2 pt-2 border-t border-white/10">
+            <span class="text-[10px] text-[#A5A5AC] uppercase tracking-wider block">Waktu Promo Berakhir:</span>
+            <div class="flex items-center gap-3 font-mono text-center">
+              <div class="bg-[#08080A] border border-white/10 px-3 py-2 rounded">
+                <span id="timerHours" class="text-xl md:text-2xl font-bold text-[#C5A059]">00</span>
+                <span class="text-[9px] text-[#8E8E93] block uppercase">Jam</span>
+              </div>
+              <span class="text-[#C5A059] text-xl font-bold">:</span>
+              <div class="bg-[#08080A] border border-white/10 px-3 py-2 rounded">
+                <span id="timerMinutes" class="text-xl md:text-2xl font-bold text-[#C5A059]">00</span>
+                <span class="text-[9px] text-[#8E8E93] block uppercase">Menit</span>
+              </div>
+              <span class="text-[#C5A059] text-xl font-bold">:</span>
+              <div class="bg-[#08080A] border border-white/10 px-3 py-2 rounded">
+                <span id="timerSeconds" class="text-xl md:text-2xl font-bold text-[#C5A059]">00</span>
+                <span class="text-[9px] text-[#8E8E93] block uppercase">Detik</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FILOSOFI MEMASAK -->
+  <section id="jiwa" class="py-20 px-6 md:px-16 max-w-6xl mx-auto border-b border-white/5">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+      <div class="relative group">
+        <div class="absolute -inset-2 bg-gradient-to-r from-[#C5A059]/20 to-transparent blur-lg opacity-40 group-hover:opacity-60 transition"></div>
+        <div class="relative overflow-hidden border border-[#C5A059]/30 bg-[#121216]">
+          <img src="https://images.unsplash.com/photo-1542051841857-5f90071e7989?q=80&w=900&auto=format&fit=crop" alt="Pavilion Zen" class="w-full h-[380px] object-cover hover:scale-105 transition duration-700 brightness-90">
+          <div class="absolute bottom-3 left-3 bg-[#08080A]/90 px-3.5 py-1.5 border border-white/10 text-[10px] tracking-widest text-[#EDE8DF] font-kanji">
+            Sabaku Kitchen: Atik Mahalla • 誠実な心
+          </div>
+        </div>
+      </div>
+
+      <div class="space-y-5">
+        <div class="flex items-center gap-2">
+          <span class="w-8 h-[1px] bg-[#C5A059]"></span>
+          <span class="text-xs uppercase tracking-[0.3em] text-[#C5A059] font-medium">Jiwa Di Balik Dapur</span>
+        </div>
+        <h3 class="font-serif text-3xl md:text-4xl text-[#EDE8DF] font-bold leading-snug">
+          Bumbu Bisa Ditiru, <br>
+          <span class="italic font-normal gold-gradient-text">Tetapi Ketulusan Tidak Pernah Bohong</span>
+        </h3>
+        <p class="text-xs md:text-sm text-[#A5A5AC] font-light leading-relaxed">
+          Memasak bukan sekadar memanaskan minyak dan menakar garam di atas kuali. Enak atau tidaknya sebuah hidangan selalu bergantung pada suasana hati dan niat orang yang meraciknya.
+        </p>
+        <p class="text-xs md:text-sm text-[#A5A5AC] font-light leading-relaxed">
+          Di <b>Sabaku Kitchen: Atik Mahalla</b>, kami memasak seperti menyajikan makanan untuk orang yang paling kami sayangi di rumah sendiri. Hening, bersih, dan penuh rasa syukur.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- MENU SECTION DENGAN HARGA RENTANG VARIAN (CONTOH: 10.000 - 20.000) -->
+  <section id="menu" class="py-24 px-6 md:px-16 max-w-7xl mx-auto">
+    <div class="text-center mb-14 space-y-2">
+      <p class="font-kanji text-[#C5A059] text-xs tracking-[0.3em]">こだわりのお品書き</p>
+      <h3 class="font-serif text-4xl md:text-5xl font-bold tracking-wide">Pilihan Menu Carte</h3>
+      <p class="text-xs text-[#A5A5AC] font-light max-w-md mx-auto">Pilih varian rasa / ukuran favorit Anda dengan harga terbaik.</p>
+      <div class="w-12 h-[1px] bg-[#C5A059] mx-auto mt-4"></div>
+    </div>
+
+    <!-- Category Filters -->
+    <div class="flex flex-wrap justify-center gap-2.5 md:gap-3 mb-14 text-xs tracking-wider uppercase font-medium">
+      <button onclick="filterCategory('all', this)" class="cat-btn border border-[#C5A059] bg-[#C5A059]/15 text-[#C5A059] px-5 py-2.5 shadow-sm">Semua Pilihan</button>
+      <button onclick="filterCategory('Makanan', this)" class="cat-btn border border-white/10 text-[#A5A5AC] hover:border-[#C5A059]/40 hover:text-white px-5 py-2.5 transition">🍛 Makanan Berat</button>
+      <button onclick="filterCategory('Cemilan', this)" class="cat-btn border border-white/10 text-[#A5A5AC] hover:border-[#C5A059]/40 hover:text-white px-5 py-2.5 transition">🥟 Cemilan & Kudapan</button>
+      <button onclick="filterCategory('Minuman', this)" class="cat-btn border border-white/10 text-[#A5A5AC] hover:border-[#C5A059]/40 hover:text-white px-5 py-2.5 transition">🍵 Minuman Segar & Kopi</button>
+      <button onclick="filterCategory('Dessert', this)" class="cat-btn border border-white/10 text-[#A5A5AC] hover:border-[#C5A059]/40 hover:text-white px-5 py-2.5 transition">🍨 Dessert & Manisan</button>
+    </div>
+
+    <!-- Menu Cards Grid -->
+    <div id="menuGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"></div>
+  </section>
+
+  <!-- LOKASI GOOGLE MAPS -->
+  <section id="lokasi" class="py-20 px-6 md:px-16 max-w-6xl mx-auto border-t border-white/5">
+    <div class="text-center mb-10 space-y-2">
+      <span class="text-xs uppercase tracking-[0.3em] text-[#C5A059]">Lokasi & Kunjungan</span>
+      <h3 class="font-serif text-3xl md:text-4xl font-bold">Sabaku Kitchen: Atik Mahalla</h3>
+      <p id="addressDisplay" class="text-xs text-[#A5A5AC] max-w-lg mx-auto leading-relaxed">Sabaku Kitchen: Atik Mahalla</p>
+    </div>
+
+    <div class="border border-[#C5A059]/30 rounded-lg p-8 md:p-12 text-center bg-[#121216] shadow-2xl space-y-6">
+      <div class="w-16 h-16 rounded-full border border-[#C5A059] flex items-center justify-center text-[#C5A059] mx-auto text-2xl shadow-lg shadow-[#C5A059]/20">
+        <i class="fa-solid fa-map-location-dot"></i>
+      </div>
+
+      <div class="space-y-2 max-w-md mx-auto">
+        <h4 class="font-serif text-2xl text-[#EDE8DF]">Navigasi Kedai Langsung</h4>
+        <p class="text-xs text-[#A5A5AC] leading-relaxed">
+          Silakan klik tombol di bawah untuk membuka titik koordinat dan rute perjalanan langsung melalui Google Maps di perangkat Anda.
+        </p>
+      </div>
+
+      <div class="pt-2">
+        <a id="btnMapsDirect" href="https://share.google/ERASWOAFTv6UFGwor" target="_blank" class="inline-flex items-center gap-3 px-8 py-4 bg-[#C5A059] hover:bg-[#F3D99A] text-[#08080A] font-bold text-xs uppercase tracking-[0.2em] rounded transition shadow-xl shadow-[#C5A059]/20">
+          <i class="fa-solid fa-location-arrow text-sm"></i> Buka Titik Lokasi di Google Maps
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="border-t border-white/5 py-14 px-6 md:px-16 bg-[#08080A] text-xs text-[#8E8E93]">
+    <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-6">
+      <div class="space-y-1.5 text-center md:text-left">
+        <h4 class="font-serif text-lg text-[#EDE8DF] font-bold">Sabaku Kitchen: Atik Mahalla</h4>
+        <p class="text-[11px] text-[#A5A5AC]">Memasak Dengan Ketulusan Hati Untuk Anda.</p>
+        <p class="text-[11px] text-[#C5A059]">Order WA: 0812-1962-3569</p>
+      </div>
+
+      <div class="flex items-center space-x-4">
+        <span>© 2025 Sabaku Kitchen: Atik Mahalla.</span>
+        <a href="/sabaku-atelier-portal" title="Portal Kunci Master" class="w-7 h-7 border border-[#8B2500]/60 bg-[#8B2500]/20 text-[#C5A059] hover:text-amber-300 hover:border-amber-400 rounded flex items-center justify-center font-kanji text-[11px] transition-all">
+          印
+        </a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- MODAL STATUS ORDER & RATING PEMBELI -->
+  <div id="ratingModal" class="fixed inset-0 z-50 bg-black/85 backdrop-blur-sm hidden flex items-center justify-center p-4">
+    <div class="bg-[#121216] border border-[#C5A059]/40 p-6 max-w-sm w-full rounded-sm text-center space-y-4 shadow-2xl">
+      <div class="w-12 h-12 rounded-full border border-[#C5A059] flex items-center justify-center text-[#C5A059] mx-auto text-lg">★</div>
+      
+      <div id="orderPendingState">
+        <h3 class="font-serif text-xl text-[#EDE8DF]">Pesanan Telah Terkirim!</h3>
+        <p class="text-xs text-[#A5A5AC] mt-1">Nomor Pesanan: <b id="displayOrderCode" class="text-[#C5A059]"></b></p>
+        <div class="my-4 p-3 bg-[#08080A] border border-amber-500/20 text-amber-400 text-xs rounded animate-pulse">
+          ⏳ Menunggu Konfirmasi Dapur Admin...
+        </div>
+        <p class="text-[11px] text-[#8E8E93]">Setelah pesanan kamu disiapkan & dikonfirmasi oleh Admin, tombol rating bintang akan terbuka otomatis.</p>
+        <button onclick="checkOrderStatus()" class="mt-3 w-full py-2.5 bg-stone-800 hover:bg-stone-700 text-xs text-white rounded">
+          Periksa Status Konfirmasi
+        </button>
+      </div>
+
+      <div id="orderCompletedState" class="hidden space-y-3">
+        <h3 class="font-serif text-xl text-[#EDE8DF]">Pesanan Selesai!</h3>
+        <p class="text-xs text-[#A5A5AC]">Admin telah mengonfirmasi pesananmu. Berikan rating rasa untuk hidangan ini:</p>
+        
+        <div class="flex justify-center gap-2 text-2xl text-stone-600 my-2" id="starContainer">
+          <button onclick="selectRatingStar(1)" class="star-btn hover:text-amber-400">★</button>
+          <button onclick="selectRatingStar(2)" class="star-btn hover:text-amber-400">★</button>
+          <button onclick="selectRatingStar(3)" class="star-btn hover:text-amber-400">★</button>
+          <button onclick="selectRatingStar(4)" class="star-btn hover:text-amber-400">★</button>
+          <button onclick="selectRatingStar(5)" class="star-btn hover:text-amber-400">★</button>
+        </div>
+
+        <button onclick="submitCustomerRating()" class="w-full py-2.5 bg-[#C5A059] text-black font-bold uppercase text-xs">Kirim Penilaian</button>
+      </div>
+
+      <button onclick="closeRatingModal()" class="text-[11px] text-stone-500 hover:text-white block mx-auto pt-2">Tutup</button>
+    </div>
+  </div>
+
+  <!-- LIGHTBOX FULLSCREEN FOTO -->
+  <div id="lightboxModal" class="fixed inset-0 z-50 bg-black/95 backdrop-blur-md hidden flex items-center justify-center p-4 md:p-8" onclick="closeLightbox(event)">
+    <div class="relative max-w-4xl w-full flex flex-col items-center" onclick="event.stopPropagation()">
+      <button onclick="closeLightbox()" class="absolute -top-12 right-0 md:-right-2 text-white/70 hover:text-white text-3xl font-light">&times;</button>
+      <div class="max-h-[75vh] w-full flex items-center justify-center overflow-hidden border border-white/10 bg-[#0E0E12] shadow-2xl rounded">
+        <img id="lightboxImg" src="" alt="Fullscreen Menu" class="max-h-[75vh] max-w-full object-contain">
+      </div>
+      <div class="w-full mt-4 flex flex-col sm:flex-row justify-between items-start sm:items-center text-left gap-2 bg-[#121216] p-4 border border-white/5 rounded">
+        <div>
+          <h4 id="lightboxTitle" class="font-serif text-xl font-bold text-[#EDE8DF]"></h4>
+          <p id="lightboxDesc" class="text-xs text-[#A5A5AC] mt-1 font-light max-w-xl"></p>
+        </div>
+        <p id="lightboxPrice" class="font-serif text-xl font-bold text-[#C5A059]"></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- KERANJANG MODAL DRAWER -->
+  <div id="cartModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden flex justify-end">
+    <div class="bg-[#101014] w-full max-w-md h-full p-8 flex flex-col justify-between border-l border-white/10 shadow-2xl">
+      <div>
+        <div class="flex justify-between items-center pb-5 border-b border-white/10">
+          <div>
+            <h3 class="font-serif text-2xl text-[#EDE8DF]">Daftar Pesanan Anda</h3>
+            <p class="text-[10px] text-[#C5A059] uppercase tracking-widest mt-0.5">Sabaku Kitchen • Atik Mahalla</p>
+          </div>
+          <button onclick="toggleCart()" class="text-2xl text-[#8E8E93] hover:text-white">&times;</button>
+        </div>
+        <div id="cartItemsList" class="divide-y divide-white/5 my-6 max-h-[55vh] overflow-y-auto pr-2 custom-scroll"></div>
+      </div>
+      
+      <div class="border-t border-white/10 pt-6 space-y-4">
+        <div class="flex justify-between text-sm">
+          <span class="text-[#A5A5AC]">Total Estimasi:</span>
+          <span id="cartSubtotal" class="font-serif text-2xl text-[#C5A059] font-bold">Rp 0</span>
+        </div>
+        <button onclick="checkoutWA()" class="w-full py-4 bg-[#C5A059] hover:bg-[#F3D99A] text-[#08080A] font-bold text-xs uppercase tracking-[0.2em] transition flex items-center justify-center gap-2.5 shadow-lg shadow-[#C5A059]/10">
+          <i class="fa-brands fa-whatsapp text-base"></i> Konfirmasi Pesanan via WhatsApp
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let allMenus = [];
+    let cart = {};
+    let selectedVariants = {};
+    let activeOrderCode = localStorage.getItem('sabaku_active_order') || "";
+    let activeOrderItems = JSON.parse(localStorage.getItem('sabaku_order_items') || '[]');
+    let chosenRating = 5;
+    const WA_NUMBER = "6281219623569";
+
+    // === EFEK KILAU EMAS ===
+    const canvas = document.getElementById('goldDustCanvas');
+    const ctx = canvas.getContext('2d');
+    let width = canvas.width = window.innerWidth;
+    let height = canvas.height = window.innerHeight;
+
+    window.addEventListener('resize', () => {
+      width = canvas.width = window.innerWidth;
+      height = canvas.height = window.innerHeight;
+    });
+
+    const particles = Array.from({ length: 35 }, () => ({
+      x: Math.random() * width,
+      y: Math.random() * height,
+      size: Math.random() * 2.2 + 0.8,
+      speedX: Math.random() * 0.6 - 0.3,
+      speedY: -(Math.random() * 0.8 + 0.3),
+      opacity: Math.random() * 0.5 + 0.2,
+      pulse: Math.random() * 0.02 + 0.01
+    }));
+
+    function drawGoldDust() {
+      ctx.clearRect(0, 0, width, height);
+      particles.forEach(p => {
+        p.x += p.speedX;
+        p.y += p.speedY;
+        p.opacity += p.pulse;
+
+        if (p.opacity > 0.75 || p.opacity < 0.15) p.pulse = -p.pulse;
+        if (p.y < 0) {
+          p.y = height + 10;
+          p.x = Math.random() * width;
+        }
+
+        ctx.save();
+        ctx.beginPath();
+        ctx.fillStyle = `rgba(212, 175, 55, ${Math.max(0.1, p.opacity)})`;
+        ctx.shadowBlur = 6;
+        ctx.shadowColor = "#E6CA85";
+        ctx.arc(p.x, p.y, p.size, 0, 2 * Math.PI);
+        ctx.fill();
+        ctx.restore();
+      });
+      requestAnimationFrame(drawGoldDust);
+    }
+    drawGoldDust();
+
+    // === AUDIO ENGINE ===
+    const bgMusic = document.getElementById('bgMusic');
+    const musicIcon = document.getElementById('musicIcon');
+    const musicStatus = document.getElementById('musicStatus');
+    let isPlaying = false;
+
+    function enterWithAudio() {
+      document.getElementById('welcomeGate').classList.add('hidden');
+      bgMusic.play().then(() => {
+        isPlaying = true;
+        musicStatus.innerText = "Sedang Memutar";
+        musicIcon.className = "fa-solid fa-volume-high text-xs spin-slow text-[#C5A059]";
+      }).catch(err => {
+        console.error("Audio error:", err);
+      });
+    }
+
+    function enterMuted() {
+      document.getElementById('welcomeGate').classList.add('hidden');
+      bgMusic.pause();
+      isPlaying = false;
+      musicStatus.innerText = "Musik Mati";
+      musicIcon.className = "fa-solid fa-volume-xmark text-xs";
+    }
+
+    function toggleAudio() {
+      if (isPlaying) {
+        bgMusic.pause();
+        isPlaying = false;
+        musicStatus.innerText = "Musik Jeda";
+        musicIcon.className = "fa-solid fa-volume-xmark text-xs";
+      } else {
+        bgMusic.play().then(() => {
+          isPlaying = true;
+          musicStatus.innerText = "Sedang Memutar";
+          musicIcon.className = "fa-solid fa-volume-high text-xs spin-slow text-[#C5A059]";
+        }).catch(() => {});
+      }
+    }
+
+    // === HERO SLIDER OTOMATIS ===
+    const slideData = [
+      {
+        title: "Rasa Bukan Sekadar Bumbu, <br><span class='italic font-normal gold-gradient-text'>Tetapi Ketulusan Jiwa</span>",
+        desc: "Bagi kami, memasak adalah tentang bagaimana hidangan disiapkan dengan niat baik, kesabaran yang hening, dan ketulusan hati."
+      },
+      {
+        title: "Dibuat Dengan Sabar, <br><span class='italic font-normal gold-gradient-text'>Disajikan Bersahaja</span>",
+        desc: "Setiap bumbu yang kami racik membawa rasa hangat seperti menikmati makanan di rumah sendiri."
+      },
+      {
+        title: "Kenyamanan Rumah, <br><span class='italic font-normal gold-gradient-text'>Di Sudut Yang Tenang</span>",
+        desc: "Menikmati makanan lezat tanpa rasa tergesa-gesa dalam suasana damai berbalut kehangatan kayu alami."
+      }
+    ];
+
+    let currentSlide = 0;
+    const slides = document.querySelectorAll('.slide-item');
+    const dots = document.querySelectorAll('.slide-dot');
+
+    function setSlide(index) {
+      currentSlide = index;
+      slides.forEach((s, idx) => {
+        if (idx === currentSlide) {
+          s.classList.remove('slide-hidden');
+          s.classList.add('slide-active');
+        } else {
+          s.classList.remove('slide-active');
+          s.classList.add('slide-hidden');
+        }
+      });
+
+      dots.forEach((d, idx) => {
+        if (idx === currentSlide) d.className = "slide-dot w-8 h-[2px] bg-[#C5A059] transition-all";
+        else d.className = "slide-dot w-4 h-[2px] bg-white/20 transition-all";
+      });
+
+      document.getElementById('heroTitle').innerHTML = slideData[currentSlide].title;
+      document.getElementById('heroSubtitle').innerText = slideData[currentSlide].desc;
+    }
+
+    setInterval(() => {
+      let next = (currentSlide + 1) % slides.length;
+      setSlide(next);
+    }, 5500);
+
+    const formatIDR = (n) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(n);
+
+    // Ambil Promo
+    async function fetchPromo() {
+      try {
+        const res = await fetch('/api/promo');
+        const promo = await res.json();
+
+        if (promo && promo.is_active && promo.title && promo.end_time) {
+          document.getElementById('promoSection').classList.remove('hidden');
+          document.getElementById('navPromoLink').classList.remove('hidden');
+          document.getElementById('promoTitle').innerText = promo.title;
+          document.getElementById('promoCaption').innerText = promo.caption;
+          document.getElementById('promoImg').src = promo.image;
+
+          const targetDate = new Date(promo.end_time).getTime();
+          const timerInterval = setInterval(() => {
+            const now = new Date().getTime();
+            const distance = targetDate - now;
+
+            if (distance <= 0) {
+              clearInterval(timerInterval);
+              document.getElementById('promoSection').classList.add('hidden');
+              return;
+            }
+
+            const hours = Math.floor(distance / (1000 * 60 * 60));
+            const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+            document.getElementById('timerHours').innerText = String(hours).padStart(2, '0');
+            document.getElementById('timerMinutes').innerText = String(minutes).padStart(2, '0');
+            document.getElementById('timerSeconds').innerText = String(seconds).padStart(2, '0');
+          }, 1000);
+        }
+      } catch (e) { console.error(e); }
+    }
+
+    // Ambil Settings Maps
+    async function fetchSettings() {
+      try {
+        const res = await fetch('/api/settings');
+        const set = await res.json();
+        
+        if (set && (set.maps_embed || set.address_text)) {
+          document.getElementById('lokasi').classList.remove('hidden');
+          document.getElementById('navLokasiLink').classList.remove('hidden');
+          if (set.maps_embed) document.getElementById('btnMapsDirect').href = set.maps_embed;
+          if (set.address_text) document.getElementById('addressDisplay').innerText = set.address_text;
+        }
+      } catch(e) { console.error(e); }
+    }
+
+    // Ambil Menu
+    async function fetchMenu() {
+      try {
+        const res = await fetch('/api/menu');
+        allMenus = await res.json();
+        renderMenu(allMenus);
+      } catch (err) { console.error(err); }
+    }
+
+    // Helper Parsing Varian JSON atau Text
+    function parseVariants(variantStr, basePrice) {
+      if (!variantStr || !variantStr.trim()) return [];
+      try {
+        // Cek jika format JSON
+        const parsed = JSON.parse(variantStr);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      } catch(e) {}
+
+      // Fallback format baris (Nama : Harga)
+      const lines = variantStr.split('\n');
+      const list = [];
+      lines.forEach(line => {
+        const parts = line.split(':');
+        if (parts.length >= 2) {
+          const vName = parts[0].trim();
+          const vPrice = parseInt(parts[1].trim()) || basePrice;
+          if (vName) list.push({ name: vName, price: vPrice });
+        }
+      });
+      return list;
+    }
+
+    function setVariant(menuId, variantName, variantPrice, discPercent) {
+      const finalVarPrice = discPercent > 0 ? Math.round(variantPrice * (1 - (discPercent / 100))) : variantPrice;
+      selectedVariants[menuId] = { name: variantName, price: finalVarPrice, normalPrice: variantPrice, isLocked: true };
+      
+      const priceEl = document.getElementById(`price-display-${menuId}`);
+      if (priceEl) {
+        priceEl.innerText = formatIDR(finalVarPrice);
+      }
+
+      const normalEl = document.getElementById(`normal-display-${menuId}`);
+      if (normalEl) {
+        if (discPercent > 0) {
+          normalEl.innerText = formatIDR(variantPrice);
+          normalEl.classList.remove('hidden');
+        } else {
+          normalEl.classList.add('hidden');
+        }
+      }
+
+      const container = document.getElementById(`variant-container-${menuId}`);
+      if (container) {
+        container.querySelectorAll('button').forEach(btn => {
+          if (btn.getAttribute('data-vname') === variantName) {
+            btn.className = "px-2.5 py-1 bg-[#C5A059] text-black font-bold rounded text-[10px] transition shadow";
+          } else {
+            btn.className = "px-2.5 py-1 bg-[#08080A] border border-white/10 text-[#A5A5AC] hover:border-[#C5A059] rounded text-[10px] transition";
+          }
+        });
+      }
+    }
+
+    // Render Menu dengan Harga Range "10.000 - 20.000"
+    function renderMenu(items) {
+      const grid = document.getElementById('menuGrid');
+
+      if (!items || items.length === 0) {
+        grid.innerHTML = `
+          <div class="col-span-full text-center py-20 border border-white/5 bg-[#121216]/60 p-8 space-y-3">
+            <div class="w-12 h-12 rounded-full border border-[#C5A059]/40 flex items-center justify-center text-[#C5A059] mx-auto font-kanji text-lg">膳</div>
+            <h4 class="font-serif text-2xl text-[#EDE8DF]">Dapur Sedang Menyiapkan Hidangan</h4>
+            <p class="text-xs text-[#A5A5AC]">Menu istimewa akan segera diperbarui melalui Dashboard Admin.</p>
+          </div>
+        `;
+        return;
+      }
+
+      const maxSales = Math.max(...items.map(i => i.sales_count || 0));
+
+      grid.innerHTML = items.map(item => {
+        const avgRating = ((item.rating_total || 5) / (item.rating_count || 1)).toFixed(1);
+        const isBestseller = (item.sales_count > 0 && item.sales_count === maxSales);
+
+        const discPercent = parseInt(item.discount_percent) || 0;
+        const hasDiscount = discPercent > 0;
+        const basePrice = item.price;
+        const discountedBasePrice = hasDiscount ? Math.round(basePrice * (1 - (discPercent / 100))) : basePrice;
+
+        // Parse Varian
+        const variantList = parseVariants(item.variants, basePrice);
+        const hasVariants = variantList.length > 0;
+
+        // Cek apakah ada variasi harga berbeda
+        let minPrice = discountedBasePrice;
+        let maxPrice = discountedBasePrice;
+        let minNormal = basePrice;
+        let maxNormal = basePrice;
+
+        if (hasVariants) {
+          const varPrices = variantList.map(v => v.price);
+          const minVar = Math.min(...varPrices);
+          const maxVar = Math.max(...varPrices);
+          
+          minNormal = minVar;
+          maxNormal = maxVar;
+
+          minPrice = hasDiscount ? Math.round(minVar * (1 - (discPercent / 100))) : minVar;
+          maxPrice = hasDiscount ? Math.round(maxVar * (1 - (discPercent / 100))) : maxVar;
+
+          // Set default varian awal jika belum dipilih
+          if (!selectedVariants[item.id]) {
+            const defVar = variantList[0];
+            const defFinalP = hasDiscount ? Math.round(defVar.price * (1 - (discPercent / 100))) : defVar.price;
+            selectedVariants[item.id] = { name: defVar.name, price: defFinalP, normalPrice: defVar.price, isLocked: false };
+          }
+        }
+
+        // Tampilan teks harga: Jika punya varian & harga beda dan belum di-klik varian spesifik
+        const isPriceRange = hasVariants && (minPrice !== maxPrice) && (!selectedVariants[item.id] || !selectedVariants[item.id].isLocked);
+        
+        let priceDisplayText = "";
+        let normalDisplayText = "";
+
+        if (isPriceRange) {
+          priceDisplayText = `${formatIDR(minPrice)} - ${formatIDR(maxPrice)}`;
+          if (hasDiscount) {
+            normalDisplayText = `${formatIDR(minNormal)} - ${formatIDR(maxNormal)}`;
+          }
+        } else {
+          const curP = (hasVariants && selectedVariants[item.id]) ? selectedVariants[item.id].price : discountedBasePrice;
+          const curN = (hasVariants && selectedVariants[item.id]) ? selectedVariants[item.id].normalPrice : basePrice;
+          priceDisplayText = formatIDR(curP);
+          normalDisplayText = formatIDR(curN);
+        }
+
+        return `
+          <div class="bg-[#121216] border border-white/5 hover:border-[#C5A059]/30 transition duration-300 flex flex-col group shadow-lg rounded overflow-hidden">
+            
+            <div onclick="openLightbox('${item.id}')" class="relative w-full aspect-[4/3] bg-black cursor-pointer overflow-hidden group/img">
+              <img src="${item.image}" alt="${item.name}" class="w-full h-full object-cover object-center group-hover/img:scale-105 transition duration-500 opacity-90 group-hover/img:opacity-100">
+              
+              <!-- Badge Kanji -->
+              <div class="absolute top-3 right-3 bg-[#08080A]/85 px-2.5 py-1 text-[10px] text-[#C5A059] border border-[#C5A059]/30 font-kanji tracking-widest shadow">
+                ${item.kanji || '手作'}
+              </div>
+
+              <!-- Lencana Bestseller -->
+              ${isBestseller ? `
+                <div class="absolute top-3 left-3 bg-gradient-to-r from-amber-500 to-yellow-400 text-black text-[10px] font-black uppercase tracking-wider px-2.5 py-1 shadow-lg flex items-center gap-1 rounded-sm">
+                  <i class="fa-solid fa-fire text-red-600"></i> BESTSELLER
+                </div>
+              ` : ''}
+
+              <!-- Badge Persentase Diskon Otomatis -->
+              ${hasDiscount ? `
+                <div class="absolute bottom-3 left-3 bg-rose-600 text-white text-[10px] font-black tracking-wider px-2.5 py-0.5 rounded shadow flex items-center gap-1">
+                  <span>🏷️</span> DISKON ${discPercent}%
+                </div>
+              ` : ''}
+
+              <div class="absolute inset-0 bg-black/40 opacity-0 group-hover/img:opacity-100 transition flex items-center justify-center gap-2 text-white text-xs">
+                <i class="fa-solid fa-magnifying-glass-plus text-base text-[#C5A059]"></i>
+                <span class="tracking-wider uppercase text-[10px]">Lihat Foto Penuh</span>
+              </div>
+
+              ${item.is_ready ? '' : '<div class="absolute inset-0 bg-black/85 flex items-center justify-center text-xs uppercase tracking-[0.2em] text-rose-400 font-bold border border-rose-500/40">Sedang Habis</div>'}
+            </div>
+
+            <div class="p-6 flex flex-col justify-between flex-grow space-y-4">
+              <div>
+                <div class="flex justify-between items-start">
+                  <h4 class="font-serif text-xl font-bold text-[#EDE8DF] tracking-wide">${item.name}</h4>
+                  
+                  <div class="flex items-center gap-1 text-[#C5A059] bg-[#08080A] px-2 py-0.5 border border-white/5 rounded text-xs select-none">
+                    <i class="fa-solid fa-star text-[11px] text-amber-400"></i>
+                    <span class="font-bold text-[11px]">${avgRating}</span>
+                  </div>
+                </div>
+
+                <!-- Tampilan Harga Range / Harga Pas -->
+                <div class="flex items-baseline gap-2 mt-1">
+                  <p id="price-display-${item.id}" class="text-[#C5A059] font-serif text-xl font-bold">
+                    ${priceDisplayText}
+                  </p>
+                  <p id="normal-display-${item.id}" class="text-stone-500 text-xs line-through ${hasDiscount ? '' : 'hidden'}">
+                    ${normalDisplayText}
+                  </p>
+                </div>
+
+                <!-- Pilihan Varian Tab/Tombol -->
+                ${hasVariants ? `
+                  <div class="mt-3 pt-2 border-t border-white/5 space-y-1.5">
+                    <span class="text-[10px] text-[#8E8E93] uppercase tracking-wider block">Pilih Varian:</span>
+                    <div id="variant-container-${item.id}" class="flex flex-wrap gap-1.5">
+                      ${variantList.map((v) => {
+                        const isSelected = selectedVariants[item.id] && selectedVariants[item.id].name === v.name && selectedVariants[item.id].isLocked;
+                        return `
+                          <button 
+                            type="button"
+                            data-vname="${v.name}"
+                            onclick="setVariant(${item.id}, '${v.name}', ${v.price}, ${discPercent})"
+                            class="px-2.5 py-1 rounded text-[10px] transition ${isSelected ? 'bg-[#C5A059] text-black font-bold shadow' : 'bg-[#08080A] border border-white/10 text-[#A5A5AC] hover:border-[#C5A059]'}"
+                          >
+                            ${v.name}
+                          </button>
+                        `;
+                      }).join('')}
+                    </div>
+                  </div>
+                ` : ''}
+
+                <p class="text-xs text-[#A5A5AC] leading-relaxed mt-2.5 font-light">${item.desc}</p>
+              </div>
+              
+              <button ${item.is_ready ? `onclick="addToCart(${item.id})"` : 'disabled'} class="w-full py-2.5 border text-[11px] uppercase tracking-[0.15em] font-semibold transition flex items-center justify-center gap-2 ${item.is_ready ? 'border-white/10 hover:border-[#C5A059] hover:text-[#C5A059] text-[#EDE8DF]' : 'border-white/5 text-[#555] cursor-not-allowed'}">
+                + ${item.is_ready ? 'Tambah ke Pesanan' : 'Stok Dapur Habis'}
+              </button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function openLightbox(id) {
+      const item = allMenus.find(i => String(i.id) === String(id));
+      if (!item) return;
+
+      const discPercent = parseInt(item.discount_percent) || 0;
+      const finalPrice = discPercent > 0 ? Math.round(item.price * (1 - (discPercent / 100))) : item.price;
+
+      document.getElementById('lightboxImg').src = item.image;
+      document.getElementById('lightboxTitle').innerText = item.name;
+      document.getElementById('lightboxDesc').innerText = item.desc;
+      document.getElementById('lightboxPrice').innerText = formatIDR(finalPrice);
+
+      document.getElementById('lightboxModal').classList.remove('hidden');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeLightbox() {
+      document.getElementById('lightboxModal').classList.add('hidden');
+      document.body.style.overflow = 'auto';
+    }
+
+    function filterCategory(cat, btn) {
+      document.querySelectorAll('.cat-btn').forEach(b => {
+        b.className = "cat-btn border border-white/10 text-[#A5A5AC] hover:border-[#C5A059]/40 hover:text-white px-5 py-2.5 transition";
+      });
+      btn.className = "cat-btn border border-[#C5A059] bg-[#C5A059]/15 text-[#C5A059] px-5 py-2.5 shadow-sm";
+      if (cat === 'all') renderMenu(allMenus);
+      else renderMenu(allMenus.filter(i => i.category === cat));
+    }
+
+    function addToCart(id) {
+      const item = allMenus.find(i => i.id === id);
+      if (!item) return;
+
+      const discPercent = parseInt(item.discount_percent) || 0;
+      const baseDiscountedPrice = discPercent > 0 ? Math.round(item.price * (1 - (discPercent / 100))) : item.price;
+
+      const variantInfo = selectedVariants[id] || null;
+      const finalPrice = (variantInfo && variantInfo.price) ? variantInfo.price : baseDiscountedPrice;
+      const variantKey = (variantInfo && variantInfo.name) ? `${id}_${variantInfo.name}` : String(id);
+      const displayName = (variantInfo && variantInfo.name) ? `${item.name} (${variantInfo.name})` : item.name;
+
+      if (!cart[variantKey]) {
+        cart[variantKey] = { 
+          id: item.id,
+          name: displayName, 
+          price: finalPrice, 
+          qty: 1 
+        };
+      } else {
+        cart[variantKey].qty += 1;
+      }
+
+      updateCartUI();
+      toggleCart(true);
+    }
+
+    function updateCartQty(variantKey, delta) {
+      if (!cart[variantKey]) return;
+      cart[variantKey].qty += delta;
+      if (cart[variantKey].qty <= 0) delete cart[variantKey];
+      updateCartUI();
+    }
+
+    function updateCartUI() {
+      const itemsList = document.getElementById('cartItemsList');
+      const countEl = document.getElementById('cartCount');
+      const subtotalEl = document.getElementById('cartSubtotal');
+      
+      const values = Object.values(cart);
+      const totalQty = values.reduce((sum, v) => sum + v.qty, 0);
+      const totalAmount = values.reduce((sum, v) => sum + (v.price * v.qty), 0);
+
+      countEl.innerText = totalQty;
+      subtotalEl.innerText = formatIDR(totalAmount);
+
+      if (values.length === 0) {
+        itemsList.innerHTML = '<p class="text-center text-xs text-[#A5A5AC] py-16">Belum ada hidangan yang dipilih.</p>';
+        return;
+      }
+
+      itemsList.innerHTML = Object.entries(cart).map(([key, item]) => `
+        <div class="py-3.5 flex justify-between items-center text-xs">
+          <div>
+            <p class="font-medium text-[#EDE8DF]">${item.name}</p>
+            <p class="text-[#C5A059] text-[11px] mt-0.5">${formatIDR(item.price * item.qty)}</p>
+          </div>
+          <div class="flex items-center gap-2 bg-[#08080A] px-2.5 py-1 border border-white/10">
+            <button onclick="updateCartQty('${key}', -1)" class="px-1 text-[#8E8E93] hover:text-white">-</button>
+            <span class="font-bold px-1.5">${item.qty}</span>
+            <button onclick="updateCartQty('${key}', 1)" class="px-1 text-[#8E8E93] hover:text-white">+</button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function toggleCart(openOnly = false) {
+      const modal = document.getElementById('cartModal');
+      if (openOnly) modal.classList.remove('hidden');
+      else modal.classList.toggle('hidden');
+    }
+
+    async function checkoutWA() {
+      const entries = Object.values(cart);
+      if (entries.length === 0) return alert("Keranjang masih kosong!");
+
+      const orderCode = 'RRT-' + Math.floor(100000 + Math.random() * 900000);
+      const itemIds = [];
+      let total = 0;
+      let rincian = "";
+
+      entries.forEach((e, idx) => {
+        rincian += `${idx + 1}. *${e.name}* (${e.qty}x) = ${formatIDR(e.price * e.qty)}\n`;
+        total += e.price * e.qty;
+        for (let i = 0; i < e.qty; i++) itemIds.push(e.id);
+      });
+
+      await fetch('/api/orders/create', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          orderCode,
+          itemsDetail: rincian,
+          totalPrice: total,
+          itemIds
+        })
+      });
+
+      activeOrderCode = orderCode;
+      activeOrderItems = itemIds;
+      localStorage.setItem('sabaku_active_order', orderCode);
+      localStorage.setItem('sabaku_order_items', JSON.stringify(itemIds));
+
+      let text = `*PESANAN BARU - SABAKU KITCHEN: ATIK MAHALLA*\nKode Pesanan: *#${orderCode}*\n----------------------------------------\n`;
+      text += rincian;
+      text += `----------------------------------------\n*Total: ${formatIDR(total)}*\n\nHalo Admin Sabaku Kitchen, tolong pesanan saya diproses ya. Terima kasih!`;
+      window.open(`https://wa.me/${WA_NUMBER}?text=${encodeURIComponent(text)}`, '_blank');
+
+      setTimeout(() => {
+        toggleCart();
+        document.getElementById('displayOrderCode').innerText = '#' + orderCode;
+        document.getElementById('orderPendingState').classList.remove('hidden');
+        document.getElementById('orderCompletedState').classList.add('hidden');
+        document.getElementById('ratingModal').classList.remove('hidden');
+      }, 1000);
+    }
+
+    async function checkOrderStatus() {
+      if (!activeOrderCode) return;
+      const res = await fetch(`/api/orders/status/${activeOrderCode}`);
+      const data = await res.json();
+
+      if (data && data.status === 'COMPLETED') {
+        document.getElementById('orderPendingState').classList.add('hidden');
+        document.getElementById('orderCompletedState').classList.remove('hidden');
+      } else {
+        alert("Pesanan masih disiapkan/menunggu konfirmasi dari Admin Dapur!");
+      }
+    }
+
+    function selectRatingStar(val) {
+      chosenRating = val;
+      const btns = document.querySelectorAll('.star-btn');
+      btns.forEach((b, idx) => {
+        if (idx < val) b.className = "star-btn text-amber-400";
+        else b.className = "star-btn text-stone-600";
+      });
+    }
+
+    async function submitCustomerRating() {
+      for (const id of activeOrderItems) {
+        await fetch(`/api/menu/rate/${id}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ rating: chosenRating })
+        });
+      }
+      alert("Terima kasih atas penilaian bintang Anda!");
+      closeRatingModal();
+      localStorage.removeItem('sabaku_active_order');
+      fetchMenu();
+    }
+
+    function closeRatingModal() {
+      document.getElementById('ratingModal').classList.add('hidden');
+    }
+
+    fetchPromo();
+    fetchSettings();
+    fetchMenu();
+  </script>
+</body>
+</html>

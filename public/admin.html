@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Executive Atelier Dashboard — Sabaku Kitchen</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    body { background-color: #080809; color: #EDE8DF; font-family: 'Plus Jakarta Sans', sans-serif; }
+    .font-serif { font-family: 'Cormorant Garamond', Georgia, serif; }
+  </style>
+</head>
+<body class="p-6 md:p-12">
+
+  <!-- Gate PIN Security -->
+  <div id="lockGate" class="fixed inset-0 z-50 bg-[#080809] flex items-center justify-center p-4">
+    <div class="bg-[#121216] border border-[#C5A059]/40 p-8 max-w-sm w-full text-center space-y-6 shadow-2xl">
+      <div class="w-12 h-12 rounded-full border border-[#C5A059] flex items-center justify-center text-[#C5A059] mx-auto text-lg font-bold">印</div>
+      <div>
+        <h2 class="font-serif text-2xl">Atelier Privileged Portal</h2>
+        <p class="text-[11px] text-[#8E8E93] uppercase tracking-widest mt-1">Sabaku Kitchen: Atik Mahalla</p>
+      </div>
+      <form onsubmit="unlockPortal(event)" class="space-y-4">
+        <input type="password" id="inputPin" placeholder="Masukkan PIN Master" class="w-full bg-[#080809] border border-white/10 px-4 py-2.5 text-center text-sm focus:border-[#C5A059] outline-none">
+        <p id="pinError" class="text-[11px] text-rose-400 hidden">PIN Master Tidak Valid.</p>
+        <button type="submit" class="w-full py-2.5 bg-[#C5A059] text-[#080809] font-bold text-xs uppercase tracking-widest hover:bg-[#F3D99A]">Buka Akses</button>
+      </form>
+      <a href="/" class="block text-[11px] text-[#8E8E93] hover:text-white">← Kembali ke Website</a>
+    </div>
+  </div>
+
+  <!-- Dashboard Utama -->
+  <div class="max-w-6xl mx-auto space-y-10">
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center pb-6 border-b border-white/10 gap-4">
+      <div>
+        <span class="text-[10px] uppercase tracking-[0.3em] text-[#C5A059]">Executive Control Center</span>
+        <h1 class="font-serif text-3xl font-bold">Dasbor Kendali Sabaku Kitchen: Atik Mahalla</h1>
+      </div>
+      <div class="flex gap-3">
+        <a href="/" class="px-4 py-2 border border-white/10 text-xs uppercase text-[#8E8E93] hover:text-white">Lihat Website</a>
+        <button onclick="location.reload()" class="px-4 py-2 bg-rose-950/40 border border-rose-800/40 text-rose-400 text-xs uppercase">Kunci Ulang</button>
+      </div>
+    </div>
+
+    <!-- Metrik Omset -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div class="p-6 bg-[#121216] border border-[#C5A059]/40 shadow-lg">
+        <span class="text-xs text-[#8E8E93] uppercase tracking-wider">Total Omset Sah Dikonfirmasi</span>
+        <p id="statOmset" class="font-serif text-3xl text-[#C5A059] font-bold mt-2">Rp 0</p>
+        <span class="text-[10px] text-emerald-400 mt-1 block">Tercatat Setelah Admin ACC</span>
+      </div>
+      <div class="p-6 bg-[#121216] border border-white/5 shadow-lg">
+        <span class="text-xs text-[#8E8E93] uppercase tracking-wider">Total Porsi Terjual Sah</span>
+        <p id="statPorsi" class="font-serif text-3xl font-bold mt-2">0</p>
+      </div>
+      <div class="p-6 bg-[#121216] border border-white/5 shadow-lg">
+        <span class="text-xs text-[#8E8E93] uppercase tracking-wider">Jumlah Menu Aktif</span>
+        <p id="statTotalMenu" class="font-serif text-3xl font-bold mt-2">0</p>
+      </div>
+    </div>
+
+    <!-- TABEL LIVE ORDERS -->
+    <div class="bg-[#121216] border border-[#C5A059]/40 p-6 md:p-8 space-y-4 shadow-xl rounded">
+      <div class="flex justify-between items-center pb-2 border-b border-white/10">
+        <h3 class="font-serif text-xl text-[#C5A059] flex items-center gap-2">
+          <i class="fa-solid fa-receipt"></i> Daftar Pesanan Masuk (Verifikasi Dapur)
+        </h3>
+        <button onclick="loadOrdersData()" class="px-3 py-1 bg-stone-800 hover:bg-stone-700 text-[11px] text-white rounded">
+          <i class="fa-solid fa-rotate"></i> Refresh Order
+        </button>
+      </div>
+
+      <div class="overflow-x-auto border border-white/5">
+        <table class="w-full text-left text-xs">
+          <thead class="bg-[#0E0E12] text-[#8E8E93] uppercase border-b border-white/10">
+            <tr>
+              <th class="p-3">Kode Order</th>
+              <th class="p-3">Rincian Menu & Varian</th>
+              <th class="p-3">Total Harga</th>
+              <th class="p-3">Waktu</th>
+              <th class="p-3">Status</th>
+              <th class="p-3 text-right">Aksi Admin</th>
+            </tr>
+          </thead>
+          <tbody id="ordersTableBody" class="divide-y divide-white/5 bg-[#080809]"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- FORM TAMBAH MENU BARU -->
+    <div class="bg-[#121216] border border-[#C5A059]/40 p-6 md:p-8 space-y-4 shadow-xl">
+      <h3 class="font-serif text-xl text-[#C5A059]">+ Tambah Hidangan / Menu Baru</h3>
+      
+      <form id="addMenuForm" onsubmit="handleCreateMenu(event)" class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+        <div>
+          <label class="block text-[#8E8E93] mb-1 font-medium">Nama Menu *</label>
+          <input type="text" name="name" required placeholder="Contoh: Sosis Bakar" class="w-full bg-[#080809] border border-white/10 px-3 py-2.5 outline-none focus:border-[#C5A059]">
+        </div>
+        <div>
+          <label class="block text-[#8E8E93] mb-1">Aksara Kanji Jepang (Opsional)</label>
+          <input type="text" name="kanji" placeholder="Contoh: 特選料理" class="w-full bg-[#080809] border border-white/10 px-3 py-2.5 outline-none focus:border-[#C5A059]">
+        </div>
+        <div>
+          <label class="block text-[#8E8E93] mb-1 font-medium">Kategori Menu *</label>
+          <select name="category" class="w-full bg-[#080809] border border-white/10 px-3 py-2.5 outline-none text-[#EDE8DF]">
+            <option value="Makanan">🍛 Makanan Berat</option>
+            <option value="Cemilan">🥟 Cemilan & Kudapan</option>
+            <option value="Minuman">🍵 Minuman Segar & Kopi</option>
+            <option value="Dessert">🍨 Dessert & Manisan</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-[#8E8E93] mb-1 font-medium">Harga Pokok Menu (Rupiah) *</label>
+          <input type="number" name="price" id="inPrice" required placeholder="Contoh: 10000" oninput="calculatePreviewPrice()" class="w-full bg-[#080809] border border-white/10 px-3 py-2.5 outline-none focus:border-[#C5A059] text-amber-300 font-bold">
+        </div>
+
+        <!-- FITUR DISKON % OTOMATIS -->
+        <div class="md:col-span-2 bg-[#080809] p-3 border border-white/10 rounded space-y-2">
+          <div class="flex items-center gap-3">
+            <div class="w-1/2">
+              <label class="block text-[#C5A059] font-medium mb-1">Diskon Promo (%)</label>
+              <input type="number" name="discount_percent" id="inDiscount" placeholder="Contoh: 5 (Kosongkan/isi 0 jika tidak diskon)" min="0" max="100" oninput="calculatePreviewPrice()" class="w-full bg-[#121216] border border-white/10 px-3 py-2 outline-none text-white">
+            </div>
+            <div class="w-1/2 text-right pt-4">
+              <span class="text-[10px] text-[#8E8E93] block">Simulasi Harga Setelah Diskon:</span>
+              <span id="previewDiscounted" class="text-sm font-bold text-emerald-400">Rp 0</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- FITUR VARIAN DENGAN TABEL / BARIS OTOMATIS -->
+        <div class="md:col-span-2 bg-[#080809] p-3 border border-white/10 rounded space-y-2">
+          <div class="flex justify-between items-center pb-1">
+            <label class="block text-[#C5A059] font-medium">Varian Menu & Harga Berbeda (Opsional)</label>
+            <button type="button" onclick="addVariantRow('createVariantContainer')" class="px-2.5 py-1 bg-[#C5A059] hover:bg-[#F3D99A] text-black font-bold rounded text-[10px]">
+              + Tambah Baris Varian
+            </button>
+          </div>
+          <p class="text-[10px] text-stone-400 leading-tight">
+            Kosongkan saja jika menu ini tidak ada varian. Jika ada varian dengan harga beda, harga di web depan otomatis menampilkan rentang harga (misal: <i>Rp 10.000 - Rp 20.000</i>).
+          </p>
+          
+          <div id="createVariantContainer" class="space-y-2 pt-1">
+            <!-- Baris Varian Dinamis Di-generate JS -->
+          </div>
+        </div>
+
+        <div class="md:col-span-2">
+          <label class="block text-[#8E8E93] mb-1 font-medium">Pilih Foto Hidangan (Dari HP/Laptop) *</label>
+          <input type="file" name="imageFile" accept="image/*" required class="w-full text-xs text-[#8E8E93] p-2 border border-white/10 bg-[#080809] rounded file:mr-3 file:py-1.5 file:px-3 file:border-0 file:text-xs file:font-bold file:bg-[#C5A059] file:text-[#080809]">
+        </div>
+
+        <div class="md:col-span-2">
+          <label class="block text-[#8E8E93] mb-1 font-medium">Deskripsi Hidangan *</label>
+          <textarea name="desc" rows="2" required placeholder="Ceritakan rasa dan kelezatannya..." class="w-full bg-[#080809] border border-white/10 px-3 py-2 outline-none focus:border-[#C5A059]"></textarea>
+        </div>
+        <div class="md:col-span-2 pt-2">
+          <button id="btnSubmitMenu" type="submit" class="px-6 py-3 bg-[#C5A059] text-[#080809] font-bold uppercase tracking-wider text-xs hover:bg-[#F3D99A] transition">
+            + Simpan & Terbitkan Menu
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <!-- TABEL MANAJEMEN MENU -->
+    <div class="space-y-4">
+      <h3 class="font-serif text-xl">Daftar Menu Terdaftar (Kelola, Edit, Hapus)</h3>
+      <div class="overflow-x-auto border border-white/5">
+        <table class="w-full text-left text-xs">
+          <thead class="bg-[#0E0E12] text-[#8E8E93] uppercase border-b border-white/10">
+            <tr>
+              <th class="p-3">Foto</th>
+              <th class="p-3">Hidangan</th>
+              <th class="p-3">Kategori</th>
+              <th class="p-3">Harga</th>
+              <th class="p-3">Diskon (%)</th>
+              <th class="p-3">Terjual</th>
+              <th class="p-3">Rating</th>
+              <th class="p-3">Status</th>
+              <th class="p-3 text-right">Aksi</th>
+            </tr>
+          </thead>
+          <tbody id="adminTableBody" class="divide-y divide-white/5 bg-[#121216]"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- PENGATURAN PROMO KHUSUS COUNTDOWN -->
+    <div class="bg-[#121216] border border-white/5 p-6 md:p-8 space-y-4 shadow-xl">
+      <div class="flex justify-between items-center border-b border-white/5 pb-3">
+        <h3 class="font-serif text-xl text-[#C5A059] flex items-center gap-2">
+          <i class="fa-solid fa-bullhorn text-sm"></i> Kelola Banner Promo & Countdown Timer
+        </h3>
+        <label class="flex items-center gap-2 text-xs cursor-pointer">
+          <input type="checkbox" id="promoActive" class="w-4 h-4 accent-[#C5A059]">
+          <span class="text-[#EDE8DF]">Aktifkan di Website</span>
+        </label>
+      </div>
+
+      <form id="promoForm" onsubmit="handleSavePromo(event)" class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+        <div>
+          <label class="block text-[#8E8E93] mb-1">Judul Promo</label>
+          <input type="text" id="promoTitleInput" placeholder="Contoh: Diskon Jamuan Spesial" required class="w-full bg-[#080809] border border-white/10 px-3 py-2 outline-none focus:border-[#C5A059]">
+        </div>
+        <div>
+          <label class="block text-[#8E8E93] mb-1">Waktu Selesai Promo</label>
+          <input type="datetime-local" id="promoEndTime" required class="w-full bg-[#080809] border border-white/10 px-3 py-2 outline-none focus:border-[#C5A059] text-white">
+        </div>
+        <div class="md:col-span-2">
+          <label class="block text-[#8E8E93] mb-1">Ganti Foto Banner Promo (Pilih Dari HP)</label>
+          <input type="file" id="promoFileInput" accept="image/*" class="text-xs text-[#8E8E93] file:mr-3 file:py-1.5 file:px-3 file:border-0 file:text-xs file:bg-[#C5A059] file:text-black">
+        </div>
+        <div class="md:col-span-2">
+          <label class="block text-[#8E8E93] mb-1">Keterangan / Caption Promo</label>
+          <textarea id="promoCaptionInput" rows="2" placeholder="Jelaskan detail diskon..." required class="w-full bg-[#080809] border border-white/10 px-3 py-2 outline-none focus:border-[#C5A059]"></textarea>
+        </div>
+        <div class="md:col-span-2">
+          <button type="submit" class="px-5 py-2.5 bg-[#C5A059] text-black font-bold uppercase tracking-wider text-xs hover:bg-[#F3D99A]">
+            Simpan Perubahan Promo
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <!-- PENGATURAN ALAMAT & GOOGLE MAPS -->
+    <div class="bg-[#121216] border border-white/5 p-6 md:p-8 space-y-4">
+      <h3 class="font-serif text-xl text-[#C5A059]">Pengaturan Lokasi Google Maps</h3>
+      <form onsubmit="handleSaveSettings(event)" class="space-y-3 text-xs">
+        <div>
+          <label class="block text-[#8E8E93] mb-1">Teks Alamat Lengkap Usaha Anda</label>
+          <input type="text" id="addressInput" value="Sabaku Kitchen: Atik Mahalla" class="w-full bg-[#080809] border border-white/10 px-3 py-2 text-white outline-none">
+        </div>
+        <div>
+          <label class="block text-[#8E8E93] mb-1">Link Google Maps (Share link)</label>
+          <input type="text" id="mapsInput" value="https://share.google/ERASWOAFTv6UFGwor" class="w-full bg-[#080809] border border-white/10 px-3 py-2 text-white outline-none">
+        </div>
+        <button type="submit" class="px-5 py-2.5 bg-[#C5A059] text-black font-bold uppercase text-xs">Simpan Lokasi</button>
+      </form>
+    </div>
+
+  </div>
+
+  <!-- MODAL EDIT MENU (DILENGKAPI VARIAN BARIS) -->
+  <div id="editModal" class="fixed inset-0 z-50 bg-black/85 backdrop-blur-sm hidden flex items-center justify-center p-4">
+    <div class="bg-[#121216] border border-[#C5A059]/40 p-6 md:p-8 max-w-lg w-full rounded space-y-4 max-h-[90vh] overflow-y-auto">
+      <div class="flex justify-between items-center pb-2 border-b border-white/10">
+        <h3 class="font-serif text-xl text-[#C5A059]">Edit Data Hidangan</h3>
+        <button onclick="closeEditModal()" class="text-2xl text-white/60 hover:text-white">&times;</button>
+      </div>
+
+      <form id="editMenuForm" onsubmit="handleUpdateMenu(event)" class="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
+        <input type="hidden" name="editId" id="editId">
+        <div class="md:col-span-2">
+          <label class="block text-[#8E8E93] mb-1">Nama Menu</label>
+          <input type="text" name="name" id="editName" required class="w-full bg-[#080809] border border-white/10 px-3 py-2 outline-none">
+        </div>
+        <div>
+          <label class="block text-[#8E8E93] mb-1">Aksara Kanji</label>
+          <input type="text" name="kanji" id="editKanji" class="w-full bg-[#080809] border border-white/10 px-3 py-2 outline-none">
+        </div>
+        <div>
+          <label class="block text-[#8E8E93] mb-1">Kategori</label>
+          <select name="category" id="editCategory" class="w-full bg-[#080809] border border-white/10 px-3 py-2 outline-none text-[#EDE8DF]">
+            <option value="Makanan">🍛 Makanan Berat</option>
+            <option value="Cemilan">🥟 Cemilan & Kudapan</option>
+            <option value="Minuman">🍵 Minuman Segar & Kopi</option>
+            <option value="Dessert">🍨 Dessert & Manisan</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-[#8E8E93] mb-1">Harga Pokok (Rupiah)</label>
+          <input type="number" name="price" id="editPrice" required class="w-full bg-[#080809] border border-white/10 px-3 py-2 outline-none text-amber-300 font-bold">
+        </div>
+        <div>
+          <label class="block text-[#8E8E93] mb-1">Diskon (%)</label>
+          <input type="number" name="discount_percent" id="editDiscount" min="0" max="100" class="w-full bg-[#080809] border border-white/10 px-3 py-2 outline-none">
+        </div>
+
+        <!-- VARIAN EDIT CONTAINER -->
+        <div class="md:col-span-2 bg-[#080809] p-3 border border-white/10 rounded space-y-2">
+          <div class="flex justify-between items-center pb-1">
+            <label class="block text-[#C5A059] font-medium">Varian Menu & Harga Berbeda</label>
+            <button type="button" onclick="addVariantRow('editVariantContainer')" class="px-2.5 py-1 bg-[#C5A059] text-black font-bold rounded text-[10px]">
+              + Tambah Baris Varian
+            </button>
+          </div>
+          <div id="editVariantContainer" class="space-y-2"></div>
+        </div>
+
+        <div class="md:col-span-2">
+          <label class="block text-[#8E8E93] mb-1">Ganti Foto (Pilih dari HP jika ingin ganti)</label>
+          <input type="file" name="imageFile" accept="image/*" class="text-xs text-[#8E8E93] file:mr-2 file:py-1 file:px-2 file:bg-[#C5A059] file:text-black">
+        </div>
+        <div class="md:col-span-2">
+          <label class="block text-[#8E8E93] mb-1">Deskripsi</label>
+          <textarea name="desc" id="editDesc" rows="2" required class="w-full bg-[#080809] border border-white/10 px-3 py-2 outline-none"></textarea>
+        </div>
+        <div class="md:col-span-2 pt-2 flex gap-2">
+          <button type="button" onclick="closeEditModal()" class="w-1/2 py-2 bg-stone-800 text-white font-bold">Batal</button>
+          <button type="submit" class="w-1/2 py-2 bg-[#C5A059] text-black font-bold">Simpan Perubahan</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    let allAdminItems = [];
+    const formatIDR = (n) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(n);
+
+    // Fungsi Tambah Baris Varian Otomatis
+    function addVariantRow(containerId, name = '', price = '') {
+      const container = document.getElementById(containerId);
+      const row = document.createElement('div');
+      row.className = "flex items-center gap-2 variant-row";
+      row.innerHTML = `
+        <input type="text" placeholder="Nama Varian (misal: Original / Jumbo)" value="${name}" class="v-name w-1/2 bg-[#121216] border border-white/10 px-2.5 py-1.5 text-xs text-white outline-none">
+        <input type="number" placeholder="Harga Varian" value="${price}" class="v-price w-1/2 bg-[#121216] border border-white/10 px-2.5 py-1.5 text-xs text-amber-300 font-bold outline-none">
+        <button type="button" onclick="this.parentElement.remove()" class="px-2.5 py-1 text-rose-400 hover:text-rose-300 text-xs font-bold" title="Hapus Varian">&times;</button>
+      `;
+      container.appendChild(row);
+    }
+
+    // Ambil Data Varian dari Baris Input Jadi Format JSON Aman
+    function collectVariantsFromContainer(containerId) {
+      const rows = document.querySelectorAll(`#${containerId} .variant-row`);
+      const list = [];
+      rows.forEach(r => {
+        const name = r.querySelector('.v-name').value.trim();
+        const price = parseInt(r.querySelector('.v-price').value) || 0;
+        if (name && price > 0) {
+          list.push({ name, price });
+        }
+      });
+      return list.length > 0 ? JSON.stringify(list) : "";
+    }
+
+    function calculatePreviewPrice() {
+      const price = parseInt(document.getElementById('inPrice').value) || 0;
+      const discount = parseInt(document.getElementById('inDiscount').value) || 0;
+      const finalPrice = discount > 0 ? Math.round(price * (1 - (discount / 100))) : price;
+      document.getElementById('previewDiscounted').innerText = formatIDR(finalPrice);
+    }
+
+    function unlockPortal(e) {
+      e.preventDefault();
+      const pin = document.getElementById('inputPin').value;
+      if (pin === '8888') {
+        document.getElementById('lockGate').classList.add('hidden');
+        loadAdminData();
+        loadOrdersData();
+        loadPromoData();
+        loadSettingsData();
+      } else {
+        document.getElementById('pinError').classList.remove('hidden');
+      }
+    }
+
+    async function loadOrdersData() {
+      const res = await fetch('/api/orders');
+      const orders = await res.json();
+      const tbody = document.getElementById('ordersTableBody');
+
+      if (!orders || orders.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-stone-500">Belum ada pesanan masuk.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = orders.map(o => `
+        <tr class="hover:bg-white/[0.02]">
+          <td class="p-3 font-mono font-bold text-[#C5A059]">#${o.order_code}</td>
+          <td class="p-3 whitespace-pre-line text-[#EDE8DF]">${o.items_detail}</td>
+          <td class="p-3 font-bold">${formatIDR(o.total_price)}</td>
+          <td class="p-3 text-[10px] text-stone-500">${new Date(o.created_at).toLocaleTimeString('id-ID')}</td>
+          <td class="p-3">
+            <span class="px-2 py-0.5 rounded text-[9px] font-bold ${
+              o.status === 'COMPLETED' ? 'bg-emerald-950 text-emerald-400 border border-emerald-800' :
+              o.status === 'CANCELLED' ? 'bg-rose-950 text-rose-400 border border-rose-800' :
+              'bg-amber-950 text-amber-300 border border-amber-800 animate-pulse'
+            }">
+              ${o.status}
+            </span>
+          </td>
+          <td class="p-3 text-right space-x-2">
+            ${o.status === 'PENDING' ? `
+              <button onclick="confirmOrder(${o.id})" class="px-3 py-1 bg-emerald-600 hover:bg-emerald-500 text-black font-bold rounded">
+                ✓ Konfirmasi Selesai
+              </button>
+              <button onclick="cancelOrder(${o.id})" class="px-2 py-1 bg-rose-950/40 text-rose-400 border border-rose-800 rounded">
+                Tolak
+              </button>
+            ` : `<span class="text-stone-500 text-[11px]">Terverifikasi</span>`}
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    async function confirmOrder(id) {
+      await fetch(`/api/orders/confirm/${id}`, { method: 'POST' });
+      loadOrdersData();
+      loadAdminData();
+      alert("Pesanan dikonfirmasi selesai! Omset bertambah & pembeli bisa memberi rating.");
+    }
+
+    async function cancelOrder(id) {
+      if (!confirm("Batalkan pesanan ini?")) return;
+      await fetch(`/api/orders/cancel/${id}`, { method: 'POST' });
+      loadOrdersData();
+    }
+
+    async function loadAdminData() {
+      const res = await fetch('/api/menu');
+      allAdminItems = await res.json();
+
+      let totalOmset = 0;
+      let totalPorsi = 0;
+      allAdminItems.forEach(i => {
+        const disc = parseInt(i.discount_percent) || 0;
+        const realPrice = disc > 0 ? Math.round(i.price * (1 - (disc / 100))) : i.price;
+        totalOmset += (realPrice * (i.sales_count || 0));
+        totalPorsi += (i.sales_count || 0);
+      });
+
+      document.getElementById('statOmset').innerText = formatIDR(totalOmset);
+      document.getElementById('statPorsi').innerText = `${totalPorsi} Porsi`;
+      document.getElementById('statTotalMenu').innerText = `${allAdminItems.length} Menu`;
+
+      const tbody = document.getElementById('adminTableBody');
+      tbody.innerHTML = allAdminItems.map(item => {
+        const avg = ((item.rating_total || 5) / (item.rating_count || 1)).toFixed(1);
+        const disc = parseInt(item.discount_percent) || 0;
+
+        return `
+          <tr class="hover:bg-white/[0.02]">
+            <td class="p-3">
+              <img src="${item.image}" alt="${item.name}" class="w-12 h-12 object-cover rounded border border-white/10 bg-black">
+            </td>
+            <td class="p-3">
+              <div class="font-bold text-[#EDE8DF]">${item.name}</div>
+              <div class="text-[10px] text-[#C5A059] font-kanji">${item.kanji || '-'}</div>
+            </td>
+            <td class="p-3 text-[#A5A5AC]">${item.category}</td>
+            <td class="p-3 font-bold text-amber-300">${formatIDR(item.price)}</td>
+            <td class="p-3 text-rose-400 font-bold">${disc > 0 ? disc + '%' : '-'}</td>
+            <td class="p-3 text-[#C5A059] font-bold">${item.sales_count || 0}x</td>
+            <td class="p-3 text-amber-300 font-bold">★ ${avg}</td>
+            <td class="p-3">
+              <button onclick="toggleReady(${item.id})" class="px-2.5 py-1 text-[10px] font-bold uppercase rounded ${item.is_ready ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30' : 'bg-rose-500/10 text-rose-400 border border-rose-500/30'}">
+                ${item.is_ready ? 'Ready' : 'Habis'}
+              </button>
+            </td>
+            <td class="p-3 text-right space-x-2">
+              <button onclick="openEditModal(${item.id})" class="text-[#C5A059] hover:underline">
+                <i class="fa-solid fa-pen-to-square"></i> Edit
+              </button>
+              <button onclick="deleteItem(${item.id})" class="text-rose-400 hover:text-rose-300">
+                <i class="fa-solid fa-trash-can"></i> Hapus
+              </button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    async function handleCreateMenu(e) {
+      e.preventDefault();
+      const form = document.getElementById('addMenuForm');
+      const formData = new FormData(form);
+      
+      // Ambil data varian otomatis dari baris yang diisi
+      const variantJson = collectVariantsFromContainer('createVariantContainer');
+      formData.set('variants', variantJson);
+
+      const btn = document.getElementById('btnSubmitMenu');
+      btn.innerText = "Mengunggah Menu...";
+      btn.disabled = true;
+
+      try {
+        const res = await fetch('/api/menu', {
+          method: 'POST',
+          body: formData
+        });
+        const result = await res.json();
+        
+        if (result.success) {
+          alert("Menu baru berhasil diterbitkan!");
+          form.reset();
+          document.getElementById('createVariantContainer').innerHTML = '';
+          document.getElementById('previewDiscounted').innerText = "Rp 0";
+          loadAdminData();
+        } else {
+          alert("Gagal: " + (result.error || "Gagal menyimpan menu"));
+        }
+      } catch (err) {
+        alert("Terjadi kesalahan saat mengunggah menu.");
+      } finally {
+        btn.innerText = "+ Simpan & Terbitkan Menu";
+        btn.disabled = false;
+      }
+    }
+
+    function openEditModal(id) {
+      const item = allAdminItems.find(i => i.id === id);
+      if (!item) return;
+
+      document.getElementById('editId').value = item.id;
+      document.getElementById('editName').value = item.name;
+      document.getElementById('editKanji').value = item.kanji;
+      document.getElementById('editCategory').value = item.category;
+      document.getElementById('editPrice').value = item.price;
+      document.getElementById('editDiscount').value = item.discount_percent || 0;
+      document.getElementById('editDesc').value = item.desc;
+
+      // Populate Baris Varian di Form Edit
+      const varContainer = document.getElementById('editVariantContainer');
+      varContainer.innerHTML = '';
+      if (item.variants) {
+        try {
+          const vList = JSON.parse(item.variants);
+          if (Array.isArray(vList)) {
+            vList.forEach(v => addVariantRow('editVariantContainer', v.name, v.price));
+          }
+        } catch(e) {
+          // Format baris biasa jika ada data lama
+          const lines = item.variants.split('\n');
+          lines.forEach(l => {
+            const parts = l.split(':');
+            if (parts.length >= 2) addVariantRow('editVariantContainer', parts[0].trim(), parts[1].trim());
+          });
+        }
+      }
+
+      document.getElementById('editModal').classList.remove('hidden');
+    }
+
+    function closeEditModal() {
+      document.getElementById('editModal').classList.add('hidden');
+    }
+
+    async function handleUpdateMenu(e) {
+      e.preventDefault();
+      const form = document.getElementById('editMenuForm');
+      const formData = new FormData(form);
+      const id = document.getElementById('editId').value;
+
+      // Kumpulkan varian dari form edit
+      const variantJson = collectVariantsFromContainer('editVariantContainer');
+      formData.set('variants', variantJson);
+
+      try {
+        const res = await fetch(`/api/menu/${id}`, {
+          method: 'PUT',
+          body: formData
+        });
+        const result = await res.json();
+
+        if (result.success) {
+          alert("Menu berhasil diperbarui!");
+          closeEditModal();
+          loadAdminData();
+        } else {
+          alert("Gagal: " + result.error);
+        }
+      } catch (err) {
+        alert("Gagal mengupdate menu.");
+      }
+    }
+
+    async function toggleReady(id) {
+      await fetch(`/api/menu/toggle/${id}`, { method: 'POST' });
+      loadAdminData();
+    }
+
+    async function deleteItem(id) {
+      if (!confirm("Hapus menu ini secara permanen?")) return;
+      await fetch(`/api/menu/${id}`, { method: 'DELETE' });
+      loadAdminData();
+    }
+
+    async function loadPromoData() {
+      const res = await fetch('/api/promo');
+      const p = await res.json();
+      if (p) {
+        document.getElementById('promoTitleInput').value = p.title || '';
+        document.getElementById('promoCaptionInput').value = p.caption || '';
+        document.getElementById('promoActive').checked = p.is_active === 1;
+        if (p.end_time) {
+          const d = new Date(p.end_time);
+          d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
+          document.getElementById('promoEndTime').value = d.toISOString().slice(0, 16);
+        }
+      }
+    }
+
+    async function handleSavePromo(e) {
+      e.preventDefault();
+      const formData = new FormData();
+      formData.append('title', document.getElementById('promoTitleInput').value);
+      formData.append('caption', document.getElementById('promoCaptionInput').value);
+      formData.append('end_time', new Date(document.getElementById('promoEndTime').value).toISOString());
+      formData.append('is_active', document.getElementById('promoActive').checked ? '1' : '0');
+      
+      const fileInput = document.getElementById('promoFileInput');
+      if (fileInput.files[0]) {
+        formData.append('promoFile', fileInput.files[0]);
+      }
+
+      await fetch('/api/promo', {
+        method: 'POST',
+        body: formData
+      });
+      alert("Pengaturan promo berhasil diperbarui!");
+    }
+
+    async function loadSettingsData() {
+      const res = await fetch('/api/settings');
+      const s = await res.json();
+      if (s) {
+        document.getElementById('addressInput').value = s.address_text || '';
+        document.getElementById('mapsInput').value = s.maps_embed || '';
+      }
+    }
+
+    async function handleSaveSettings(e) {
+      e.preventDefault();
+      const body = {
+        address_text: document.getElementById('addressInput').value,
+        maps_embed: document.getElementById('mapsInput').value
+      };
+      await fetch('/api/settings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+      });
+      alert("Alamat & Google Maps berhasil disimpan!");
+    }
+  </script>
+</body>
+</html>
